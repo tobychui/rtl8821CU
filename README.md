@@ -115,3 +115,48 @@ Use the tool 'iw', please don't use other tools like 'airmon-ng'
 iw dev wlan0 set monitor none
 ```
 
+## Build with Raspberry Pi 4
+To build this driver for Raspberry Pi 4, you need to follow the steps below.
+
+```
+#Follow the build step until just before ./dkms-install.sh
+
+# Update and upgrade apt
+sudo apt update -y
+sudo apt upgrade -y
+
+# Install bc
+sudo apt-get install bc
+
+# Reboot the system
+sudo reboot
+```
+
+Next, edit the MakeFire to change these two lines
+
+```
+CONFIG_PLATFORM_I386_PC = y
+CONFIG_PLATFORM_ARM_RPI = n
+```
+
+to 
+
+```
+CONFIG_PLATFORM_I386_PC = n
+CONFIG_PLATFORM_ARM_RPI = y
+```
+
+Then, run these lines to fix Make error on ARM processor
+```
+sudo cp /lib/modules/$(uname -r)/build/arch/arm/Makefile /lib/modules/$(uname -r)/build/arch/arm/Makefile.$(date +%Y%m%d%H%M)
+sudo sed -i 's/-msoft-float//' /lib/modules/$(uname -r)/build/arch/arm/Makefile
+sudo ln -s /lib/modules/$(uname -r)/build/arch/arm /lib/modules/$(uname -r)/build/arch/armv7l
+```
+
+Finally, continue the steps above to install via dkms
+```
+# Run dkms install with sudo
+sudo ./dkms-install.sh
+```
+
+and you should see wlan1 pop up on your Pi 4.
